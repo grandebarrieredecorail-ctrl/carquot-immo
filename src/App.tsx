@@ -1,15 +1,11 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
-  Building2,
   Home,
-  Landmark,
+  Building2,
   Wallet,
   Save,
   FolderOpen,
   Printer,
-  CheckCircle2,
-  Scale,
-  Gauge,
   Clock,
   RotateCcw,
   Moon,
@@ -25,33 +21,27 @@ import { defaultInput } from './constants';
 import { computeResults, formatEuro, formatPercent } from './calculations';
 import { useSavedSimulations } from './hooks/useSavedSimulations';
 import { StepProfil } from './components/steps/StepProfil';
-import { StepAcquisition } from './components/steps/StepAcquisition';
-import { StepFinancement } from './components/steps/StepFinancement';
+import { StepBien } from './components/steps/StepBien';
 import { StepRevenus } from './components/steps/StepRevenus';
-import { StepJuridique } from './components/steps/StepJuridique';
-import { StepDPE } from './components/steps/StepDPE';
 import { StepRevente } from './components/steps/StepRevente';
 import { ResultsDashboard } from './components/ResultsDashboard';
 import { SimulationsSidebar } from './components/SimulationsSidebar';
 import { AnnonceImport } from './components/AnnonceImport';
 import { CarquotImmoLogo } from './components/CarquotImmoLogo';
 
-type TabId = 'profil' | 'acquisition' | 'financement' | 'revenus' | 'juridique' | 'dpe' | 'revente' | 'resultats';
+type TabId = 'profil' | 'bien' | 'revenus' | 'revente' | 'resultats';
 
 const TABS: { id: TabId; label: string; short: string; icon: React.ComponentType<{ size?: number | string }> }[] = [
   { id: 'profil', label: 'Profil', short: 'Profil', icon: Home },
-  { id: 'acquisition', label: 'Acquisition', short: 'Achat', icon: Building2 },
-  { id: 'financement', label: 'Financement', short: 'Prêt', icon: Landmark },
-  { id: 'revenus', label: 'Revenus', short: 'Loyers', icon: Wallet },
-  { id: 'juridique', label: 'Juridique', short: 'Fiscal', icon: Scale },
-  { id: 'dpe', label: 'DPE', short: 'DPE', icon: Gauge },
-  { id: 'revente', label: 'Revente', short: 'Sortie', icon: Clock },
+  { id: 'bien', label: 'Bien', short: 'Bien', icon: Building2 },
+  { id: 'revenus', label: 'Revenus & Fiscalité', short: 'Revenus', icon: Wallet },
+  { id: 'revente', label: 'Sortie', short: 'Sortie', icon: Clock },
   { id: 'resultats', label: 'Résultats Détaillés', short: 'Résultats', icon: BarChart3 },
 ];
 
 function App() {
   const [input, setInput] = useState<SimulationInput>(defaultInput);
-  const [activeTab, setActiveTab] = useState<TabId>('profil');
+  const [activeTab, setActiveTab] = useState<TabId>('bien');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [simName, setSimName] = useState('');
@@ -86,12 +76,12 @@ function App() {
   const handleLoad = useCallback((sim: SavedSimulation) => {
     setInput(sim.input);
     setSidebarOpen(false);
-    setActiveTab('profil');
+    setActiveTab('bien');
   }, []);
 
   const handleReset = useCallback(() => {
     setInput(defaultInput);
-    setActiveTab('profil');
+    setActiveTab('bien');
   }, []);
 
   const handleExportExcel = useCallback(() => {
@@ -185,10 +175,17 @@ function App() {
     switch (activeTab) {
       case 'profil':
         return <StepProfil input={input} onChange={updateInput} profilAide={results.profilAide} />;
-      case 'acquisition':
-        return <StepAcquisition input={input} onChange={updateInput} fraisAgenceCalcule={results.fraisAgenceCalcule} />;
-      case 'financement':
-        return <StepFinancement input={input} onChange={updateInput} montantEmprunte={results.montantEmprunte} />;
+      case 'bien':
+        return (
+          <StepBien
+            input={input}
+            onChange={updateInput}
+            fraisAgenceCalcule={results.fraisAgenceCalcule}
+            montantEmprunte={results.montantEmprunte}
+            gainValorisation={results.gainValorisationVerte}
+            valeurRevalorisee={results.valeurBienRevalorisee}
+          />
+        );
       case 'revenus':
         return (
           <StepRevenus
@@ -198,17 +195,6 @@ function App() {
             loyerMaxSuggere={results.loyerMaxSuggere}
             loyerEstimeQuartier={results.loyerEstimeQuartier}
             loyerM2Quartier={results.loyerM2Quartier}
-          />
-        );
-      case 'juridique':
-        return <StepJuridique input={input} onChange={updateInput} />;
-      case 'dpe':
-        return (
-          <StepDPE
-            input={input}
-            onChange={updateInput}
-            gainValorisation={results.gainValorisationVerte}
-            valeurRevalorisee={results.valeurBienRevalorisee}
           />
         );
       case 'revente':
@@ -287,8 +273,7 @@ function App() {
       {/* Main content */}
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <div className="flex flex-col gap-5">
-          {/* Lien annonce (always visible, compact) */}
-          {activeTab === 'acquisition' && (
+          {activeTab === 'bien' && (
             <AnnonceImport input={input} onChange={updateInput} />
           )}
 

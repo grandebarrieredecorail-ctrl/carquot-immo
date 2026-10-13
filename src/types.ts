@@ -28,6 +28,8 @@ export type DPELabel = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 export type RegionFrance = string;
 
+export type TypeBien = 'appartement' | 'maison';
+
 export interface ProjectionAnnee {
   annee: number;
   loyerAnnuel: number;
@@ -51,6 +53,16 @@ export interface SimulationInput {
   simulerSubventions: boolean;
   typeRenovation: 'geste' | 'globale';
   simulerEcoPTZ: boolean;
+
+  // Endettement actuel
+  revenusMensuels: number;
+  creditsEnCours: number;
+  loyersPercusMensuels: number;
+
+  // Bien
+  typeBien: TypeBien;
+  nombreChambres: number;
+  negociationPct: number;
 
   // Acquisition & travaux
   prixAchat: number;

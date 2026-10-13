@@ -414,6 +414,14 @@ export const defaultInput: SimulationInput = {
   typeRenovation: 'globale',
   simulerEcoPTZ: false,
 
+  revenusMensuels: 0,
+  creditsEnCours: 0,
+  loyersPercusMensuels: 0,
+
+  typeBien: 'appartement',
+  nombreChambres: 0,
+  negociationPct: 0,
+
   prixAchat: 0,
   etatBien: 'ancien',
   tauxNotaire: 7.5,

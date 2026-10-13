@@ -17,6 +17,15 @@
     "repo": "carquot-immo"
   },
   "win": {
-    "target": ["nsis"]
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
   }
 }

@@ -45,6 +45,7 @@ export function computeResults(input: SimulationInput): SimulationResults {
     input.auditEnergetique +
     input.fraisDossier +
     input.montantTravaux +
+    input.travauxEnergetiques +
     coutMoe;
 
   // === Profil MaPrimeRénov' ===

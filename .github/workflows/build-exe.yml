@@ -15,19 +15,24 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18
+        node-version: 20
 
     - name: Install dependencies
       run: npm install
 
-    - name: Build and Package Electron
+    - name: Build web app
+      run: npm run build
+
+    - name: Package with Electron Builder
       run: |
-        npm install --save-dev electron electron-builder
-        npx vite build
-        npx electron-builder --win --x64 -c.asar=false
+        npm install --save-dev electron@latest electron-builder@latest
+        npx electron-builder --win --x64 -c.asar=false -c.win.generateUpdatesFilesForAllChannels=false
 
     - name: Upload artifact (.exe)
       uses: actions/upload-artifact@v4
       with:
         name: Carquot-Immo-Windows
-        path: dist-electron/*.exe
+        path: |
+          dist/*.exe
+          dist-electron/*.exe
+          release/*.exe

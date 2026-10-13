@@ -9,6 +9,8 @@ import {
   Check,
   FolderInput,
   GripVertical,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import type { SavedSimulation } from '../types';
 import { formatEuro, formatPercent } from '../calculations';
@@ -48,6 +50,16 @@ export function SimulationsSidebar({
   const [showFolderInput, setShowFolderInput] = useState(false);
   const [draggedSimId, setDraggedSimId] = useState<string | null>(null);
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
+
+  const toggleFolderCollapse = (folderName: string) => {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderName)) next.delete(folderName);
+      else next.add(folderName);
+      return next;
+    });
+  };
 
   const simFolderMap = new Map<string, SavedSimulation[]>();
   for (const f of folders) simFolderMap.set(f, []);
@@ -161,6 +173,9 @@ export function SimulationsSidebar({
 
   const renderFolderDropZone = (folderName: string, isUnfiled = false) => {
     const isDragOver = dragOverFolder === (isUnfiled ? '__unfiled__' : folderName);
+    const collapseKey = isUnfiled ? '__unfiled__' : folderName;
+    const isCollapsed = collapsedFolders.has(collapseKey);
+    const simCount = isUnfiled ? unfiled.length : simFolderMap.get(folderName)?.length || 0;
     return (
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOverFolder(isUnfiled ? '__unfiled__' : folderName); }}
@@ -172,7 +187,14 @@ export function SimulationsSidebar({
             : 'border-transparent'
         }`}
       >
-        <div className="mb-2 flex items-center gap-2">
+        <div
+          className="mb-2 flex cursor-pointer items-center gap-2 select-none"
+          onClick={() => toggleFolderCollapse(collapseKey)}
+        >
+          {isCollapsed
+            ? <ChevronRight size={16} className="shrink-0 text-slate-400 transition-transform" />
+            : <ChevronDown size={16} className="shrink-0 text-slate-400 transition-transform" />
+          }
           {isUnfiled ? (
             <>
               <FolderOpen size={16} className="text-slate-400" />
@@ -182,28 +204,33 @@ export function SimulationsSidebar({
             <>
               <Folder size={16} className="text-amber-500" />
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{folderName}</span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">
-                ({simFolderMap.get(folderName)?.length || 0})
-              </span>
-              <button
-                onClick={() => onDeleteFolder(folderName)}
-                className="ml-auto rounded p-0.5 text-slate-300 transition-colors hover:text-rose-500 dark:text-slate-600"
-                title="Supprimer le dossier"
-              >
-                <Trash2 size={12} />
-              </button>
             </>
           )}
-        </div>
-        <div className="flex flex-col gap-2 pl-1">
-          {(isUnfiled ? unfiled : simFolderMap.get(folderName) || []).map(renderSim)}
-          {isDragOver && (
-            <div className="rounded-lg border-2 border-dashed border-teal-400 bg-teal-50 p-3 text-center text-xs text-teal-600 dark:bg-slate-700 dark:text-teal-400">
-              <FolderInput size={16} className="mx-auto mb-1" />
-              Déposer ici
-            </div>
+          <span className="text-xs text-slate-400 dark:text-slate-500">({simCount})</span>
+          {!isUnfiled && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDeleteFolder(folderName); }}
+              className="ml-auto rounded p-0.5 text-slate-300 transition-colors hover:text-rose-500 dark:text-slate-600"
+              title="Supprimer le dossier"
+            >
+              <Trash2 size={12} />
+            </button>
           )}
         </div>
+        {!isCollapsed && (
+          <div className="flex flex-col gap-2 pl-1">
+            {(isUnfiled ? unfiled : simFolderMap.get(folderName) || []).map(renderSim)}
+            {isDragOver && (
+              <div className="rounded-lg border-2 border-dashed border-teal-400 bg-teal-50 p-3 text-center text-xs text-teal-600 dark:bg-slate-700 dark:text-teal-400">
+                <FolderInput size={16} className="mx-auto mb-1" />
+                Déposer ici
+              </div>
+            )}
+            {simCount === 0 && !isDragOver && (
+              <p className="px-2 py-3 text-center text-xs text-slate-300 dark:text-slate-600">Dossier vide</p>
+            )}
+          </div>
+        )}
       </div>
     );
   };

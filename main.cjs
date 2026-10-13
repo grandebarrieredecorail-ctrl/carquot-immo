@@ -1,8 +1,8 @@
 const { app, BrowserWindow, Menu } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
 function createWindow() {
-  // Masquer la barre de menu native (File, Edit, View...)
   Menu.setApplicationMenu(null);
 
   const win = new BrowserWindow({
@@ -16,20 +16,15 @@ function createWindow() {
     }
   });
 
-  // Charger l'application web compilée
-  const indexPath = path.join(__dirname, 'dist', 'index.html');
-  win.loadFile(indexPath).catch(err => {
-    console.error("Erreur de chargement du fichier :", err);
-  });
+  win.loadFile(path.join(__dirname, 'dist', 'index.html'));
+
+  // Vérifier les mises à jour 3 secondes après le lancement
+  setTimeout(() => {
+    autoUpdater.checkForUpdatesAndNotify();
+  }, 3000);
 }
 
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

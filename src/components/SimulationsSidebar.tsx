@@ -52,10 +52,7 @@ export function SimulationsSidebar({
   const simFolderMap = new Map<string, SavedSimulation[]>();
   for (const f of folders) simFolderMap.set(f, []);
   for (const s of simulations) {
-    const list = simFolderMap.get(s.folder || '') || [];
-    list.push(s);
-    if (s.folder) {
-      if (!simFolderMap.has(s.folder)) simFolderMap.set(s.folder, []);
+    if (s.folder && folders.includes(s.folder)) {
       simFolderMap.get(s.folder)!.push(s);
     }
   }

@@ -6,10 +6,10 @@
   },
   "files": [
     "dist/**/*",
-    "main.js"
+    "main.cjs"
   ],
   "extraMetadata": {
-    "main": "main.js"
+    "main": "main.cjs"
   },
   "win": {
     "target": [

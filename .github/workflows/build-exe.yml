@@ -1,4 +1,4 @@
-name: Build Desktop App (.exe)
+name: Build and Release
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write # Nécessaire pour créer une Release GitHub
 
     steps:
     - name: Checkout code
@@ -23,13 +25,9 @@ jobs:
     - name: Build web app
       run: npm run build
 
-    - name: Package with Electron Builder
+    - name: Publish with Electron Builder
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        npm install --save-dev electron@latest electron-builder@latest
-        npx electron-builder --config electron-builder.json --publish never
-
-    - name: Upload artifact (.exe)
-      uses: actions/upload-artifact@v4
-      with:
-        name: Carquot-Immo-Windows
-        path: release/*.exe
+        npm install --save-dev electron@latest electron-builder@latest electron-updater
+        npx electron-builder --win --publish always

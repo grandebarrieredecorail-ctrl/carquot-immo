@@ -1,0 +1,33 @@
+name: Build Desktop App (.exe)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build and Package Electron
+      run: |
+        npm install --save-dev electron electron-builder
+        npx vite build
+        npx electron-builder --win --x64 -c.asar=false
+
+    - name: Upload artifact (.exe)
+      uses: actions/upload-artifact@v4
+      with:
+        name: Carquot-Immo-Windows
+        path: dist-electron/*.exe

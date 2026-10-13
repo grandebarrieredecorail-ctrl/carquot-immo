@@ -11,16 +11,12 @@
   "extraMetadata": {
     "main": "main.cjs"
   },
-  "win": {
-    "target": [
-      {
-        "target": "nsis",
-        "arch": ["x64"]
-      }
-    ]
+  "publish": {
+    "provider": "github",
+    "owner": "grandebarrieredecorail-ctrl",
+    "repo": "carquot-immo"
   },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true
+  "win": {
+    "target": ["nsis"]
   }
 }

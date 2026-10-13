@@ -1,0 +1,26 @@
+{
+  "appId": "com.carquot.immo",
+  "productName": "Carquot Immo",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "main.js"
+  ],
+  "extraMetadata": {
+    "main": "main.js"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

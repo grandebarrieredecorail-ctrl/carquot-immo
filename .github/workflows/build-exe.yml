@@ -26,7 +26,7 @@ jobs:
     - name: Package with Electron Builder
       run: |
         npm install --save-dev electron@latest electron-builder@latest
-        npx electron-builder --win --x64 -c.asar=false -c.win.generateUpdatesFilesForAllChannels=false
+        npx electron-builder --win nsis --x64 -c.asar=false --publish never
 
     - name: Upload artifact (.exe)
       uses: actions/upload-artifact@v4

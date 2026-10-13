@@ -26,13 +26,10 @@ jobs:
     - name: Package with Electron Builder
       run: |
         npm install --save-dev electron@latest electron-builder@latest
-        npx electron-builder --win nsis --x64 --publish never
+        npx electron-builder --config electron-builder.json --publish never
 
     - name: Upload artifact (.exe)
       uses: actions/upload-artifact@v4
       with:
         name: Carquot-Immo-Windows
-        path: |
-          dist/*.exe
-          dist-electron/*.exe
-          release/*.exe
+        path: release/*.exe

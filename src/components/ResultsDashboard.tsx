@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -16,6 +16,8 @@ import {
   ChevronUp,
   Receipt as ReceiptIcon,
   BarChart3,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import type { SimulationResults, ProjectionAnnee } from '../types';
 import { formatEuro, formatPercent } from '../calculations';
@@ -174,7 +176,7 @@ function FiscaliteTab({ results }: { results: SimulationResults }) {
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-violet-50 to-white p-5 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
+      <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-emerald-50 to-white p-5 dark:border-slate-700 dark:from-slate-800 dark:to-slate-800">
         <div className="mb-2 flex items-center gap-2 text-slate-500 dark:text-slate-400">
           <Percent size={16} />
           <span className="text-xs font-medium uppercase tracking-wide">R. nette-nette (après impôt)</span>
@@ -205,12 +207,75 @@ function FiscaliteTab({ results }: { results: SimulationResults }) {
   );
 }
 
+type CurveKey = 'patrimoine' | 'capitalRestant' | 'cashFlow' | 'fiscalite' | 'loyerAnnuel';
+
+const curveConfig: { key: CurveKey; label: string; color: string }[] = [
+  { key: 'patrimoine', label: 'Patrimoine net', color: '#14b8a6' },
+  { key: 'capitalRestant', label: 'Capital restant dû', color: '#f59e0b' },
+  { key: 'cashFlow', label: 'Cash-flow annuel', color: '#3b82f6' },
+  { key: 'fiscalite', label: 'Fiscalité', color: '#ef4444' },
+  { key: 'loyerAnnuel', label: 'Loyer annuel', color: '#8b5cf6' },
+];
+
 function ProjectionTab({ results }: { results: SimulationResults }) {
   const [showTable, setShowTable] = useState(false);
+  const [visibleCurves, setVisibleCurves] = useState<Set<CurveKey>>(new Set(['patrimoine']));
   const projection = results.projection;
-  const patrimoineMax = Math.max(...projection.map((p) => p.patrimoine), 1);
-  const patrimoineMin = Math.min(...projection.map((p) => p.patrimoine), 0);
-  const patrimoineRange = Math.max(patrimoineMax - patrimoineMin, 1);
+
+  const toggleCurve = (key: CurveKey) => {
+    setVisibleCurves((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const chartData = useMemo(() => {
+    if (projection.length === 0) return null;
+
+    const activeCurves = curveConfig.filter((c) => visibleCurves.has(c.key));
+    if (activeCurves.length === 0) return null;
+
+    const width = 600;
+    const height = 240;
+    const padding = { top: 20, right: 20, bottom: 30, left: 60 };
+    const chartW = width - padding.left - padding.right;
+    const chartH = height - padding.top - padding.bottom;
+
+    const allValues: number[] = [];
+    for (const p of projection) {
+      for (const c of activeCurves) {
+        const val = c.key === 'fiscalite' ? results.totalFiscaliteAnnuelle : c.key === 'capitalRestant' ? p.capitalRestantDu : c.key === 'cashFlow' ? p.cashFlowAnnuel : p[c.key];
+        allValues.push(val);
+      }
+    }
+
+    const minVal = Math.min(...allValues, 0);
+    const maxVal = Math.max(...allValues, 1);
+    const range = Math.max(maxVal - minVal, 1);
+
+    const xStep = chartW / Math.max(projection.length - 1, 1);
+
+    const toX = (i: number) => padding.left + i * xStep;
+    const toY = (val: number) => padding.top + chartH - ((val - minVal) / range) * chartH;
+
+    const lines = activeCurves.map((curve) => {
+      const points = projection.map((p, i) => {
+        const val = curve.key === 'fiscalite' ? results.totalFiscaliteAnnuelle : curve.key === 'capitalRestant' ? p.capitalRestantDu : curve.key === 'cashFlow' ? p.cashFlowAnnuel : p[curve.key];
+        return `${toX(i)},${toY(val)}`;
+      });
+      return {
+        ...curve,
+        pathD: `M ${points.join(' L ')}`,
+        areaPathD: `M ${toX(0)},${toY(0)} L ${points.join(' L ')} L ${toX(projection.length - 1)},${toY(0)} Z`,
+      };
+    });
+
+    const yTicks = [minVal, minVal + range * 0.25, minVal + range * 0.5, minVal + range * 0.75, maxVal];
+
+    return { width, height, padding, chartW, chartH, lines, xStep, toX, toY, yTicks, minVal, maxVal };
+  }, [projection, visibleCurves, results.totalFiscaliteAnnuelle]);
 
   return (
     <>
@@ -228,19 +293,141 @@ function ProjectionTab({ results }: { results: SimulationResults }) {
 
       {projection.length > 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-          <p className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Évolution du patrimoine net</p>
-          <div className="flex items-end gap-1 h-32 rounded-xl bg-slate-50 p-3 border border-slate-100 dark:bg-slate-700 dark:border-slate-600">
-            {projection.map((p, i) => {
-              const heightPct = ((p.patrimoine - patrimoineMin) / patrimoineRange) * 100;
-              const isPositive = p.patrimoine >= 0;
-              return (
-                <div key={i} className="group relative flex-1 flex flex-col items-center justify-end" style={{ minWidth: 8 }}>
-                  <div className={`w-full rounded-t transition-all ${isPositive ? 'bg-teal-400 group-hover:bg-teal-500' : 'bg-rose-400 group-hover:bg-rose-500'}`} style={{ height: `${Math.max(heightPct, 2)}%` }} />
-                  {projection.length <= 15 && <span className="mt-1 text-[9px] text-slate-400 dark:text-slate-500">{p.annee}</span>}
-                </div>
-              );
-            })}
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Évolution du patrimoine net</h4>
+            </div>
+
+            {/* Curve toggle buttons */}
+            <div className="flex flex-wrap gap-2">
+              {curveConfig.map((curve) => {
+                const active = visibleCurves.has(curve.key);
+                return (
+                  <button
+                    key={curve.key}
+                    onClick={() => toggleCurve(curve.key)}
+                    className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all ${
+                      active
+                        ? 'border-transparent text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                    }`}
+                    style={active ? { backgroundColor: curve.color } : undefined}
+                  >
+                    {active ? <Eye size={12} /> : <EyeOff size={12} />}
+                    {curve.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* SVG Chart */}
+          {chartData ? (
+            <div className="overflow-x-auto">
+              <svg
+                viewBox={`0 0 ${chartData.width} ${chartData.height}`}
+                className="w-full"
+                style={{ minWidth: 400 }}
+              >
+                {/* Grid lines + Y labels */}
+                {chartData.yTicks.map((tick, i) => {
+                  const y = chartData.toY(tick);
+                  return (
+                    <g key={i}>
+                      <line
+                        x1={chartData.padding.left}
+                        y1={y}
+                        x2={chartData.width - chartData.padding.right}
+                        y2={y}
+                        stroke="currentColor"
+                        strokeWidth="0.5"
+                        className="text-slate-200 dark:text-slate-700"
+                        strokeDasharray="3,3"
+                      />
+                      <text
+                        x={chartData.padding.left - 8}
+                        y={y + 3}
+                        textAnchor="end"
+                        fontSize="10"
+                        className="fill-slate-400 dark:fill-slate-500"
+                      >
+                        {tick >= 1000 ? `${(tick / 1000).toFixed(0)}k` : tick.toFixed(0)}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* X labels */}
+                {projection.map((p, i) => {
+                  if (projection.length > 15 && i % 5 !== 0 && i !== projection.length - 1) return null;
+                  return (
+                    <text
+                      key={i}
+                      x={chartData.toX(i)}
+                      y={chartData.height - 8}
+                      textAnchor="middle"
+                      fontSize="10"
+                      className="fill-slate-400 dark:fill-slate-500"
+                    >
+                      An {p.annee}
+                    </text>
+                  );
+                })}
+
+                {/* Lines */}
+                {chartData.lines.map((line) => (
+                  <g key={line.key}>
+                    {line.key === 'patrimoine' && (
+                      <path
+                        d={line.areaPathD}
+                        fill={line.color}
+                        opacity="0.08"
+                      />
+                    )}
+                    <path
+                      d={line.pathD}
+                      fill="none"
+                      stroke={line.color}
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                    />
+                  </g>
+                ))}
+
+                {/* Zero line */}
+                {chartData.minVal < 0 && (
+                  <line
+                    x1={chartData.padding.left}
+                    y1={chartData.toY(0)}
+                    x2={chartData.width - chartData.padding.right}
+                    y2={chartData.toY(0)}
+                    stroke="currentColor"
+                    strokeWidth="1"
+                    className="text-slate-300 dark:text-slate-600"
+                  />
+                )}
+              </svg>
+            </div>
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-700">
+              <p className="text-sm text-slate-400 dark:text-slate-500">
+                {visibleCurves.size === 0 ? 'Sélectionnez au moins une courbe à afficher' : 'Aucune donnée disponible'}
+              </p>
+            </div>
+          )}
+
+          {/* Legend */}
+          {chartData && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {chartData.lines.map((line) => (
+                <div key={line.key} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: line.color }} />
+                  {line.label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

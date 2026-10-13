@@ -10,58 +10,43 @@ export function CarquotImmoLogo({ size = 40 }: LogoProps) {
       viewBox="0 0 48 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Carquot Immo"
     >
-      {/* Heart outline */}
-      <path
-        d="M24 43s-1.2-1.1-3.1-2.8C17.3 36.9 8 30.5 8 20.5 8 13.6 13.1 9 18.5 9c2.6 0 4.9 1 5.5 2.7C24.6 10 26.9 9 29.5 9 34.9 9 40 13.6 40 20.5c0 10-9.3 16.4-12.9 19.7C25.2 41.9 24 43 24 43z"
-        fill="url(#heartGradient)"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="text-teal-600 dark:text-teal-400"
-        strokeLinejoin="round"
-      />
-      {/* Building silhouette inside the heart */}
-      <g fill="white" opacity="0.95">
-        {/* Left tower */}
-        <rect x="16" y="20" width="6" height="14" rx="0.5" />
-        {/* Right tower */}
-        <rect x="23" y="16" width="6" height="18" rx="0.5" />
-        {/* Windows on left tower */}
-        <rect x="17.2" y="22" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="19.3" y="22" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="17.2" y="25" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="19.3" y="25" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="17.2" y="28" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="19.3" y="28" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        {/* Windows on right tower */}
-        <rect x="24.2" y="18" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="26.3" y="18" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="24.2" y="21" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="26.3" y="21" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="24.2" y="24" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="26.3" y="24" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="24.2" y="27" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-        <rect x="26.3" y="27" width="1.5" height="1.5" rx="0.2" fill="#0d9488" opacity="0.5" />
-      </g>
-      {/* T+L initials at the bottom of the heart */}
-      <text
-        x="24"
-        y="40"
-        textAnchor="middle"
-        fontSize="5.5"
-        fontWeight="700"
-        fill="white"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.5"
-      >
-        T+L
-      </text>
       <defs>
-        <linearGradient id="heartGradient" x1="8" y1="9" x2="40" y2="43" gradientUnits="userSpaceOnUse">
+        <linearGradient id="logoGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
           <stop stopColor="#14b8a6" />
           <stop offset="1" stopColor="#0d9488" />
         </linearGradient>
       </defs>
+      {/* Rounded square background */}
+      <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#logoGrad)" />
+      {/* White heart outline */}
+      <path
+        d="M24 38s-1-0.9-2.5-2.3C18.2 32.6 11 27.5 11 19.5 11 14.8 14.3 11 18 11c2.2 0 4 1.2 6 3.5 2-2.3 3.8-3.5 6-3.5 3.7 0 7 3.8 7 8.5 0 8-7.2 13.1-10.5 16.2C25 37.1 24 38 24 38z"
+        fill="none"
+        stroke="white"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+      />
+      {/* Simple building silhouette inside */}
+      <g fill="white" opacity="0.9">
+        <rect x="18" y="21" width="5" height="11" rx="0.5" />
+        <rect x="25" y="18" width="5" height="14" rx="0.5" />
+      </g>
+      {/* Window dots */}
+      <g fill="#0d9488" opacity="0.35">
+        <rect x="19.3" y="23" width="1.3" height="1.3" rx="0.2" />
+        <rect x="21" y="23" width="1.3" height="1.3" rx="0.2" />
+        <rect x="19.3" y="26" width="1.3" height="1.3" rx="0.2" />
+        <rect x="21" y="26" width="1.3" height="1.3" rx="0.2" />
+        <rect x="26.3" y="20" width="1.3" height="1.3" rx="0.2" />
+        <rect x="28" y="20" width="1.3" height="1.3" rx="0.2" />
+        <rect x="26.3" y="23" width="1.3" height="1.3" rx="0.2" />
+        <rect x="28" y="23" width="1.3" height="1.3" rx="0.2" />
+        <rect x="26.3" y="26" width="1.3" height="1.3" rx="0.2" />
+        <rect x="28" y="26" width="1.3" height="1.3" rx="0.2" />
+      </g>
     </svg>
   );
 }

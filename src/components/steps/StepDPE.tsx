@@ -1,8 +1,9 @@
 import { Gauge, TrendingUp } from 'lucide-react';
 import type { SimulationInput, DPELabel } from '../../types';
 import { NumberField, SectionCard } from '../ui/FormField';
-import { dpeLabels, dpeColors, dpeImpact } from '../../constants';
+import { dpeLabels, dpeColors, dpeImpact, infoLinks } from '../../constants';
 import { formatEuro } from '../../calculations';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 interface Props {
   input: SimulationInput;
@@ -17,7 +18,7 @@ export function StepDPE({ input, onChange, gainValorisation, valeurRevalorisee }
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionCard title="Diagnostic DPE & valorisation verte" icon={<Gauge size={20} />}>
+      <SectionCard title="Diagnostic DPE & valorisation verte" icon={<Gauge size={20} />} badge={<InfoTooltip url={infoLinks.dpe} label="DPE — ecologie.gouv.fr" />}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">DPE actuel du bien</label>

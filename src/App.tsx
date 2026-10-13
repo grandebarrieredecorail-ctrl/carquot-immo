@@ -57,7 +57,7 @@ function App() {
   const [simName, setSimName] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
-  const { simulations, saveSimulation, deleteSimulation, renameSimulation, moveSimulationToFolder } = useSavedSimulations();
+  const { simulations, folders, createFolder, deleteFolder, saveSimulation, deleteSimulation, renameSimulation, moveSimulationToFolder } = useSavedSimulations();
 
   const results = useMemo(() => computeResults(input), [input]);
 
@@ -390,6 +390,9 @@ function App() {
       {sidebarOpen && (
         <SimulationsSidebar
           simulations={simulations}
+          folders={folders}
+          onCreateFolder={createFolder}
+          onDeleteFolder={deleteFolder}
           onDelete={deleteSimulation}
           onRename={renameSimulation}
           onMoveToFolder={moveSimulationToFolder}

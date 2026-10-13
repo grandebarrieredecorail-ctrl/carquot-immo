@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import type { SavedSimulation, SimulationInput, SimulationResults } from '../types';
 
-const STORAGE_KEY = 'immopro_saved_simulations';
+const STORAGE_KEY = 'carquot_saved_simulations';
+const FOLDERS_KEY = 'carquot_folders';
 
 function loadSimulations(): SavedSimulation[] {
   try {
@@ -22,8 +23,52 @@ function saveSimulations(sims: SavedSimulation[]): void {
   }
 }
 
+function loadFolders(): string[] {
+  try {
+    const raw = localStorage.getItem(FOLDERS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFolders(folders: string[]): void {
+  try {
+    localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+  } catch {
+    // ignore quota errors
+  }
+}
+
 export function useSavedSimulations() {
   const [simulations, setSimulations] = useState<SavedSimulation[]>(loadSimulations);
+  const [folders, setFolders] = useState<string[]>(loadFolders);
+
+  const createFolder = useCallback((name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setFolders((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      const next = [...prev, trimmed];
+      saveFolders(next);
+      return next;
+    });
+  }, []);
+
+  const deleteFolder = useCallback((name: string) => {
+    setFolders((prev) => {
+      const next = prev.filter((f) => f !== name);
+      saveFolders(next);
+      return next;
+    });
+    setSimulations((prev) => {
+      const next = prev.map((s) => (s.folder === name ? { ...s, folder: undefined } : s));
+      saveSimulations(next);
+      return next;
+    });
+  }, []);
 
   const saveSimulation = useCallback(
     (name: string, input: SimulationInput, results: SimulationResults, folder?: string) => {
@@ -71,7 +116,9 @@ export function useSavedSimulations() {
   const clearAll = useCallback(() => {
     setSimulations([]);
     saveSimulations([]);
+    setFolders([]);
+    saveFolders([]);
   }, []);
 
-  return { simulations, saveSimulation, deleteSimulation, renameSimulation, moveSimulationToFolder, clearAll };
+  return { simulations, folders, createFolder, deleteFolder, saveSimulation, deleteSimulation, renameSimulation, moveSimulationToFolder, clearAll };
 }

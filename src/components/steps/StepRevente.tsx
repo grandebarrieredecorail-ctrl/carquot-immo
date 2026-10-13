@@ -1,6 +1,8 @@
 import { Clock, TrendingUp, Calendar } from 'lucide-react';
 import type { SimulationInput } from '../../types';
 import { NumberField, SectionCard } from '../ui/FormField';
+import { InfoTooltip } from '../ui/InfoTooltip';
+import { infoLinks } from '../../constants';
 
 interface Props {
   input: SimulationInput;
@@ -10,24 +12,36 @@ interface Props {
 export function StepRevente({ input, onChange }: Props) {
   return (
     <div className="flex flex-col gap-5">
-      <SectionCard title="Paramètres de projection" icon={<TrendingUp size={20} />}>
+      <SectionCard title="Paramètres de projection" icon={<TrendingUp size={20} />} badge={<InfoTooltip url={infoLinks.croissanceBien} label="Indice des prix immobilier — INSEE" />}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <NumberField
-            label="Croissance annuelle de la valeur"
-            value={input.croissanceAnnuelle}
-            onChange={(v) => onChange({ croissanceAnnuelle: v })}
-            suffix="%/an"
-            step={0.5}
-            hint="Appréciation ou dépréciation du bien par an"
-          />
-          <NumberField
-            label="Croissance annuelle des loyers"
-            value={input.croissanceLoyer}
-            onChange={(v) => onChange({ croissanceLoyer: v })}
-            suffix="%/an"
-            step={0.5}
-            hint="Indexation annuelle des loyers"
-          />
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Croissance annuelle de la valeur</label>
+              <InfoTooltip url={infoLinks.croissanceBien} label="Indice des prix immobilier — INSEE" />
+            </div>
+            <NumberField
+              label=""
+              value={input.croissanceAnnuelle}
+              onChange={(v) => onChange({ croissanceAnnuelle: v })}
+              suffix="%/an"
+              step={0.5}
+              hint="Appréciation ou dépréciation du bien par an"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Croissance annuelle des loyers</label>
+              <InfoTooltip url={infoLinks.irl} label="Indice de Référence des Loyers (IRL) — INSEE" />
+            </div>
+            <NumberField
+              label=""
+              value={input.croissanceLoyer}
+              onChange={(v) => onChange({ croissanceLoyer: v })}
+              suffix="%/an"
+              step={0.5}
+              hint="Indexation annuelle des loyers (IRL)"
+            />
+          </div>
         </div>
       </SectionCard>
 

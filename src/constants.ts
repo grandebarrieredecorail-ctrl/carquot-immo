@@ -104,14 +104,19 @@ export const infoLinks = {
   maPrimeRenov: 'https://france-renov.gouv.fr/aides-financieres/ma-prime-renov',
   ecoPTZ: 'https://france-renov.gouv.fr/aides-financieres/eco-pret-taux-zero',
   dpe: 'https://www.ecologie.gouv.fr/diagnostic-performance-energetique-dpe',
+  dpeObs: 'https://www.observatoires-dpe.fr/',
   lmnp: 'https://www.impots.gouv.fr/particulier/loueur-meuble-non-professionnel-lmnp',
   microBic: 'https://www.impots.gouv.fr/professionnel/entreprise/luh-micro-bic',
-  sciIr: 'https://www.impots.gouv.fr/professionnel/entreprise/sci-societe-civile-immobiliere',
+  sciIr: 'https://www.service-public.fr/particuliers/vosdroits/F31816',
   sciIs: 'https://www.service-public.fr/professionnels-entreprises/vosdroits/F31816',
   sarlFamille: 'https://www.service-public.fr/professionnels-entreprises/vosdroits/F31493',
   foncierReel: 'https://www.impots.gouv.fr/particulier/regime-du-reel-foncier',
   plusValue: 'https://www.impots.gouv.fr/particulier/plus-value-immobiliere',
-  tmi: 'https://www.impots.gouv.fr/particulier/calcul-impot-revenu',
+  tmi: 'https://www.economie.gouv.fr/particuliers/tranches-imposition-revenu-2024',
+  tauxNotaire: 'https://www.notaires.fr/immobilier-fiscalit%C3%A9/frais-de-notaire-et-droits-de-mutation',
+  croissanceBien: 'https://www.insee.fr/fr/statistiques/serie/001530391',
+  croissanceLoyer: 'https://www.service-public.fr/particuliers/vosdroits/F1314',
+  irl: 'https://www.insee.fr/fr/statistiques/serie/001530391',
 };
 
 // === Taux de crédit immobilier par durée (moyennes marché 2024) ===

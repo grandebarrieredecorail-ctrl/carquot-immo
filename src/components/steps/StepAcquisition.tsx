@@ -32,14 +32,20 @@ export function StepAcquisition({ input, onChange, fraisAgenceCalcule }: Props) 
               { value: 'neuf', label: 'Neuf' },
             ]}
           />
-          <NumberField
-            label="Taux des frais de notaire"
-            value={input.tauxNotaire}
-            onChange={(v) => onChange({ tauxNotaire: v })}
-            suffix="%"
-            step={0.1}
-            hint="Ancien ≈ 7,5 % · Neuf ≈ 2,5 %"
-          />
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Taux des frais de notaire</label>
+              <InfoTooltip url={infoLinks.tauxNotaire} label="Frais de notaire — notaires.fr" />
+            </div>
+            <NumberField
+              label=""
+              value={input.tauxNotaire}
+              onChange={(v) => onChange({ tauxNotaire: v })}
+              suffix="%"
+              step={0.1}
+              hint="Ancien ≈ 7,5 % · Neuf ≈ 2,5 %"
+            />
+          </div>
         </div>
 
         <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-700">

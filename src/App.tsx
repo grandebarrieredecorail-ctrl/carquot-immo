@@ -38,7 +38,7 @@ import { CarquotImmoLogo } from './components/CarquotImmoLogo';
 
 type TabId = 'profil' | 'acquisition' | 'financement' | 'revenus' | 'juridique' | 'dpe' | 'revente' | 'resultats';
 
-const TABS: { id: TabId; label: string; short: string; icon: React.ComponentType<{ size?: number }> }[] = [
+const TABS: { id: TabId; label: string; short: string; icon: React.ComponentType<{ size?: number | string }> }[] = [
   { id: 'profil', label: 'Profil', short: 'Profil', icon: Home },
   { id: 'acquisition', label: 'Acquisition', short: 'Achat', icon: Building2 },
   { id: 'financement', label: 'Financement', short: 'Prêt', icon: Landmark },
@@ -289,7 +289,7 @@ function App() {
         <div className="flex flex-col gap-5">
           {/* Lien annonce (always visible, compact) */}
           {activeTab === 'acquisition' && (
-            <AnnonceImport input={input} onImport={updateInput} />
+            <AnnonceImport input={input} onChange={updateInput} />
           )}
 
           {/* Tab navigation */}

@@ -14,9 +14,10 @@ interface Props {
 export function StepProfil({ input, onChange, profilAide }: Props) {
   const colors = profilColors[profilAide];
 
-  const totalChargesMensuel = input.creditsEnCours + input.loyersPercusMensuels;
-  const tauxEndettement = input.revenusMensuels > 0
-    ? (totalChargesMensuel / input.revenusMensuels) * 100
+  const revenusPondérés = input.revenusMensuels + input.loyersPercusMensuels * 0.7;
+  const totalChargesMensuel = input.creditsEnCours;
+  const tauxEndettement = revenusPondérés > 0
+    ? (totalChargesMensuel / revenusPondérés) * 100
     : 0;
 
   return (
@@ -146,7 +147,7 @@ export function StepProfil({ input, onChange, profilAide }: Props) {
                 <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(input.revenusMensuels)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500 dark:text-slate-400">Charges mensuelles (crédits + loyers)</span>
+                <span className="text-slate-500 dark:text-slate-400">Charges mensuelles (crédits)</span>
                 <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(totalChargesMensuel)}</span>
               </div>
               <div className="my-1 border-t border-slate-200 dark:border-slate-600" />

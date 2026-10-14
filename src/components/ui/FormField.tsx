@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 interface NumberFieldProps {
@@ -21,6 +22,13 @@ export function NumberField({
   step = 1,
   min = 0,
 }: NumberFieldProps) {
+  const [focused, setFocused] = useState(false);
+  const [textValue, setTextValue] = useState('');
+
+  const displayValue = focused
+    ? textValue
+    : (Number.isNaN(value) ? '' : value);
+
   return (
     <div className="flex flex-col gap-1.5">
       {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
@@ -32,8 +40,21 @@ export function NumberField({
         )}
         <input
           type="number"
-          value={Number.isNaN(value) ? '' : value}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+          value={displayValue}
+          onChange={(e) => {
+            const text = e.target.value;
+            setTextValue(text);
+            const num = parseFloat(text);
+            onChange(Number.isNaN(num) ? 0 : num);
+          }}
+          onFocus={() => {
+            setFocused(true);
+            setTextValue(value === 0 ? '' : String(value));
+          }}
+          onBlur={() => {
+            setFocused(false);
+            setTextValue('');
+          }}
           step={step}
           min={min}
           className={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-teal-400 ${

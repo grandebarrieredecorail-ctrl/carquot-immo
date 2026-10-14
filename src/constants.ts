@@ -24,10 +24,22 @@ const thresholdsProvince: Record<number, Thresholds> = {
   5: { Bleu: 45435, Jaune: 58981, Violet: 68700, Rose: Infinity },
 };
 
+const incrementPerExtraPersonIDF = { Bleu: 8490, Jaune: 11026, Violet: 13751 };
+const incrementPerExtraPersonProvince = { Bleu: 5720, Jaune: 7470, Violet: 8709 };
+
 function getThresholds(region: 'idf' | 'province', personnes: number): Thresholds {
   const table = region === 'idf' ? thresholdsIDF : thresholdsProvince;
-  const n = Math.min(Math.max(personnes, 1), 5);
-  return table[n] ?? table[5];
+  const n = Math.max(personnes, 1);
+  if (n <= 5) return table[n];
+  const base = table[5];
+  const extra = n - 5;
+  const increment = region === 'idf' ? incrementPerExtraPersonIDF : incrementPerExtraPersonProvince;
+  return {
+    Bleu: base.Bleu + increment.Bleu * extra,
+    Jaune: base.Jaune + increment.Jaune * extra,
+    Violet: base.Violet + increment.Violet * extra,
+    Rose: Infinity,
+  };
 }
 
 export function getMaPrimeRenovProfil(
@@ -418,8 +430,6 @@ export const defaultInput: SimulationInput = {
   creditsEnCours: 0,
   loyersPercusMensuels: 0,
 
-  typeBien: 'appartement',
-  nombreChambres: 0,
   negociationPct: 0,
 
   prixAchat: 0,

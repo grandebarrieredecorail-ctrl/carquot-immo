@@ -14,19 +14,22 @@ import {
 } from './constants';
 
 export function computeResults(input: SimulationInput): SimulationResults {
+  const prixAchatEffectif = input.prixAchat * (1 - input.negociationPct / 100);
+  const inputEff = { ...input, prixAchat: prixAchatEffectif };
+
   // === Frais de notaire ===
-  const fraisNotaire = (input.prixAchat * input.tauxNotaire) / 100;
+  const fraisNotaire = (prixAchatEffectif * input.tauxNotaire) / 100;
 
   // === Frais d'agence (montant fixe ou pourcentage) ===
   const fraisAgenceCalcule =
     input.fraisAgenceMode === 'percentage'
-      ? (input.prixAchat * input.fraisAgencePourcentage) / 100
+      ? (prixAchatEffectif * input.fraisAgencePourcentage) / 100
       : input.fraisAgence;
 
   // === Chasseur de biens ===
   const chasseurHonoraires = input.chasseurActif
     ? input.chasseurMode === 'percentage'
-      ? (input.prixAchat * input.chasseurPourcentage) / 100
+      ? (prixAchatEffectif * input.chasseurPourcentage) / 100
       : input.chasseurForfait
     : 0;
 
@@ -38,7 +41,7 @@ export function computeResults(input: SimulationInput): SimulationResults {
 
   // === Coût total du projet ===
   const coutTotalProjet =
-    input.prixAchat +
+    prixAchatEffectif +
     fraisNotaire +
     fraisAgenceCalcule +
     chasseurHonoraires +
@@ -127,7 +130,7 @@ export function computeResults(input: SimulationInput): SimulationResults {
 
   // === Rentabilités — méthodologie standard ===
   // BRUTE : (Loyer Annuel HC / Prix d'achat net vendeur) × 100
-  const rentabiliteBrute = input.prixAchat > 0 ? (loyerAnnuelBrut / input.prixAchat) * 100 : 0;
+  const rentabiliteBrute = prixAchatEffectif > 0 ? (loyerAnnuelBrut / prixAchatEffectif) * 100 : 0;
 
   // NETTE : ((Loyer HC - Vacance - Charges non récupérables - Taxe foncière - PNO - Gestion) / Coût total projet) × 100
   // Coût total = Prix + Notaire + Agence + Travaux + MOE + Chasseur + Audit
@@ -139,7 +142,7 @@ export function computeResults(input: SimulationInput): SimulationResults {
 
   // === FISCALITÉ ANNUELLE ===
   const { revenuImposableAnnuel, impotAnnuel, prelevementsSociaux, totalFiscaliteAnnuelle, amortissementAnnuel } =
-    computeFiscaliteAnnuelle(input, loyerAnnuelAvecVacance, loyerAnnuelNet, chargesAnnuellesTotales);
+    computeFiscaliteAnnuelle(inputEff, loyerAnnuelAvecVacance, loyerAnnuelNet, chargesAnnuellesTotales);
 
   // NETTE-NETTE : Rentabilité nette après impôt et prélèvements sociaux
   const cashFlowApresImpot = cashFlowMensuelNet * 12 - totalFiscaliteAnnuelle;
@@ -150,15 +153,15 @@ export function computeResults(input: SimulationInput): SimulationResults {
       : 0;
 
   // === DPE & VALORISATION VERTE ===
-  const dpeDecoteActuelle = input.prixAchat * dpeImpact[input.dpeActuel];
-  const dpeSurcoteCible = input.prixAchat * dpeImpact[input.dpeCible];
+  const dpeDecoteActuelle = prixAchatEffectif * dpeImpact[input.dpeActuel];
+  const dpeSurcoteCible = prixAchatEffectif * dpeImpact[input.dpeCible];
   // Gain = différence entre valeur avec DPE cible et valeur avec DPE actuel
   const gainValorisationVerte = dpeSurcoteCible - dpeDecoteActuelle;
   // Valeur revalorisée = prix d'achat + gain vert (après travaux)
-  const valeurBienRevalorisee = input.prixAchat + gainValorisationVerte + input.montantTravaux;
+  const valeurBienRevalorisee = prixAchatEffectif + gainValorisationVerte + input.montantTravaux;
 
   // === PROJECTION MULTI-ANNÉES + REVENTE ===
-  const projection = computeProjection(input, loyerAnnuelAvecVacance, chargesAnnuellesTotales, mensualiteTotale, montantEmprunte, totalFiscaliteAnnuelle, valeurBienRevalorisee, fraisAgenceCalcule + chasseurHonoraires + input.auditEnergetique);
+  const projection = computeProjection(inputEff, loyerAnnuelAvecVacance, chargesAnnuellesTotales, mensualiteTotale, montantEmprunte, valeurBienRevalorisee, fraisAgenceCalcule + chasseurHonoraires + input.auditEnergetique);
 
   const derniereAnnee = projection[projection.length - 1];
   const plusValueBruteRevente = derniereAnnee?.plusValueBrute ?? 0;
@@ -168,13 +171,13 @@ export function computeResults(input: SimulationInput): SimulationResults {
   const patrimoineFinal = derniereAnnee?.patrimoine ?? 0;
 
   // === TRI multi-horizons ===
-  const tri = computeTRI(input, projection, montantEmprunte);
-  const tri5 = computeTRIAtYear(input, projection, montantEmprunte, 5);
-  const tri10 = computeTRIAtYear(input, projection, montantEmprunte, 10);
-  const tri15 = computeTRIAtYear(input, projection, montantEmprunte, 15);
+  const tri = computeTRI(inputEff, projection, montantEmprunte);
+  const tri5 = computeTRIAtYear(inputEff, projection, montantEmprunte, 5);
+  const tri10 = computeTRIAtYear(inputEff, projection, montantEmprunte, 10);
+  const tri15 = computeTRIAtYear(inputEff, projection, montantEmprunte, 15);
 
   // === Comparateur fiscal ===
-  const comparatifFiscal = computeComparatifFiscal(input, loyerAnnuelAvecVacance, chargesAnnuellesTotales);
+  const comparatifFiscal = computeComparatifFiscal(inputEff, loyerAnnuelAvecVacance, chargesAnnuellesTotales);
 
   // === AIDE LOYERS — quartier ou région ===
   const loyerM2Quartier = input.loyerM2Personnalise > 0
@@ -288,7 +291,19 @@ function computeFiscaliteAnnuelle(
       };
     }
     case 'micro_foncier': {
-      // Abattement 30%
+      // Abattement 30%, réservé aux revenus fonciers annuels ≤ 15 000 €
+      if (loyerAnnuelPercu > 15000) {
+        const revenuImposable = Math.max(0, loyerAnnuelPercu - chargesAnnuelles);
+        const impot = revenuImposable * tmi;
+        const prelevements = revenuImposable * ps;
+        return {
+          revenuImposableAnnuel: revenuImposable,
+          impotAnnuel: impot,
+          prelevementsSociaux: prelevements,
+          totalFiscaliteAnnuelle: impot + prelevements,
+          amortissementAnnuel: 0,
+        };
+      }
       const abattement = 0.30;
       const revenuImposable = loyerAnnuelPercu * (1 - abattement);
       const impot = revenuImposable * tmi;
@@ -347,7 +362,6 @@ function computeProjection(
   chargesAnnuellesInitiales: number,
   mensualiteTotale: number,
   montantEmprunte: number,
-  fiscaliteAnnuelle: number,
   valeurBienRevalorisee: number,
   fraisAgenceCalcule: number
 ): ProjectionAnnee[] {
@@ -360,7 +374,7 @@ function computeProjection(
   // Valeur de base pour la revente = prix d'achat (pour calcul plus-value des particuliers)
   // ou prix d'achat + travaux (pour valorisation IS)
   const prixAcquisition = input.prixAchat + fraisAgenceCalcule + input.fraisDossier + fraisNotaireValue(input);
-  const valeurAcquisitionIS = input.prixAchat + fraisNotaireValue(input);
+  const valeurAcquisitionIS = input.prixAchat + fraisAgenceCalcule + input.fraisDossier + fraisNotaireValue(input);
 
   let cashFlowCumule = 0;
 
@@ -372,8 +386,9 @@ function computeProjection(
     // Mensualité de crédit (0 si prêt terminé)
     const mensualite = annee <= dureeCredit ? mensualiteTotale * 12 : 0;
 
-    // Cash-flow annuel après impôt
-    const cashFlowAnnuel = loyerAnnuel - charges - mensualite - fiscaliteAnnuelle;
+    // Fiscalité recalculée chaque année (loyers et charges évoluent)
+    const { totalFiscaliteAnnuelle: fiscaliteAnnee } = computeFiscaliteAnnuelle(input, loyerAnnuel, loyerAnnuel - charges, charges);
+    const cashFlowAnnuel = loyerAnnuel - charges - mensualite - fiscaliteAnnee;
     cashFlowCumule += cashFlowAnnuel;
 
     // Valeur du bien avec croissance
@@ -536,11 +551,13 @@ function computeComparatifFiscal(
     regimes.push({ regime: 'LMNP Réel', impotAnnuel: impot, cashFlowNet: loyerNetAvantImpot - impot });
   }
 
-  // Micro-Foncier (nu)
+  // Micro-Foncier (nu) — plafonné à 15 000 € de revenus fonciers annuels
   {
-    const revenuImposable = loyerAnnuelPercu * 0.7;
+    const revenuImposable = loyerAnnuelPercu > 15000
+      ? Math.max(0, loyerAnnuelPercu - chargesAnnuelles)
+      : loyerAnnuelPercu * 0.7;
     const impot = revenuImposable * tmi + revenuImposable * ps;
-    regimes.push({ regime: 'Micro-Foncier', impotAnnuel: impot, cashFlowNet: loyerNetAvantImpot - impot });
+    regimes.push({ regime: loyerAnnuelPercu > 15000 ? 'Micro-Foncier (bascule foncier réel)' : 'Micro-Foncier', impotAnnuel: impot, cashFlowNet: loyerNetAvantImpot - impot });
   }
 
   // Foncier Réel (nu)

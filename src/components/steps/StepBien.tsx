@@ -2,14 +2,12 @@ import {
   Building2,
   Landmark,
   Hammer,
-  Search,
-  Gauge,
   TrendingUp,
   RefreshCw,
   Home,
   Percent,
 } from 'lucide-react';
-import type { SimulationInput, DPELabel, TypeBien } from '../../types';
+import type { SimulationInput, DPELabel } from '../../types';
 import { NumberField, SegmentedControl, SectionCard, Toggle } from '../ui/FormField';
 import { formatEuro } from '../../calculations';
 import { dpeLabels, dpeColors, dpeImpact, getTauxSuggere, infoLinks } from '../../constants';
@@ -41,16 +39,7 @@ export function StepBien({
     <div className="flex flex-col gap-5">
       {/* --- Caractéristiques du bien --- */}
       <SectionCard title="Caractéristiques du bien" icon={<Home size={20} />}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <SegmentedControl
-            label="Type de bien"
-            value={input.typeBien}
-            onChange={(v) => onChange({ typeBien: v as TypeBien })}
-            options={[
-              { value: 'appartement', label: 'Appartement' },
-              { value: 'maison', label: 'Maison' },
-            ]}
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <NumberField
             label="Surface"
             value={input.surface}
@@ -60,10 +49,12 @@ export function StepBien({
             min={1}
           />
           <NumberField
-            label="Nombre de chambres"
-            value={input.nombreChambres}
-            onChange={(v) => onChange({ nombreChambres: Math.round(v) })}
-            min={0}
+            label="Négociation espérée"
+            value={input.negociationPct}
+            onChange={(v) => onChange({ negociationPct: v })}
+            suffix="%"
+            step={0.5}
+            hint="Pourcentage de remise sur le prix affiché"
           />
         </div>
 
@@ -74,14 +65,6 @@ export function StepBien({
             onChange={(v) => onChange({ prixAchat: v })}
             suffix="€"
             step={1000}
-          />
-          <NumberField
-            label="Négociation espérée"
-            value={input.negociationPct}
-            onChange={(v) => onChange({ negociationPct: v })}
-            suffix="%"
-            step={0.5}
-            hint="Pourcentage de remise sur le prix affiché"
           />
         </div>
 

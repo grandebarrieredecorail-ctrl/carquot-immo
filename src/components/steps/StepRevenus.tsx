@@ -1,4 +1,4 @@
-import { Wallet, Lightbulb, Sparkles, MapPin, Scale, FileText } from 'lucide-react';
+import { Wallet, Lightbulb, Sparkles, MapPin, Scale, FileText, Gauge, TrendingDown, TrendingUp } from 'lucide-react';
 import type { SimulationInput, StructureJuridique, TypeLocation, RegimeFiscal } from '../../types';
 import { NumberField, SegmentedControl, SectionCard, SelectField } from '../ui/FormField';
 import { villeOptions, getQuartiers, regionFranceOptions, structureOptions, typeLocationOptions, regimeFiscalOptions, tmiOptions, infoLinks } from '../../constants';
@@ -12,6 +12,7 @@ interface Props {
   loyerMaxSuggere: number;
   loyerEstimeQuartier: number;
   loyerM2Quartier: number;
+  mensualiteTotale: number;
 }
 
 export function StepRevenus({
@@ -21,11 +22,22 @@ export function StepRevenus({
   loyerMaxSuggere,
   loyerEstimeQuartier,
   loyerM2Quartier,
+  mensualiteTotale,
 }: Props) {
   const quartiers = getQuartiers(input.ville);
   const quartierOptions = quartiers.map((q) => ({ value: q.nom, label: q.nom }));
   const hasSuggestion = loyerMinSuggere > 0 && loyerMaxSuggere > 0;
   const regimes = regimeFiscalOptions[input.typeLocation];
+
+  const revenusPondèresActuel = input.revenusMensuels + input.loyersPercusMensuels * 0.7;
+  const chargesActuel = input.creditsEnCours;
+  const tauxActuel = revenusPondèresActuel > 0 ? (chargesActuel / revenusPondèresActuel) * 100 : 0;
+
+  const loyerNouveauPondere = input.loyerMensuel * 0.7;
+  const revenusPondèresApres = input.revenusMensuels + (input.loyersPercusMensuels + input.loyerMensuel) * 0.7;
+  const chargesApres = input.creditsEnCours + mensualiteTotale;
+  const tauxApres = revenusPondèresApres > 0 ? (chargesApres / revenusPondèresApres) * 100 : 0;
+  const variationTaux = tauxApres - tauxActuel;
 
   const handleVilleChange = (ville: string) => {
     const quarts = getQuartiers(ville);
@@ -125,6 +137,114 @@ export function StepRevenus({
             )}
           </div>
         </div>
+      </SectionCard>
+
+      {/* --- Taux d'endettement prévu --- */}
+      <SectionCard
+        title="Taux d'endettement prévu"
+        icon={<Gauge size={20} />}
+        badge={
+          <span className={`rounded-full px-3 py-1 text-sm font-bold ${
+            tauxApres > 35
+              ? 'bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300'
+              : tauxApres > 30
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300'
+                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300'
+          }`}>
+            {tauxApres.toFixed(1)}%
+          </span>
+        }
+      >
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+          Comparez votre taux d'endettement avant et après l'acquisition de ce bien.
+          Les banques appliquent un abattement de 70% sur les loyers perçus (vacance et charges).
+        </p>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Avant */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-700">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Actuel</span>
+            </div>
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Revenus pondérés</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(revenusPondèresActuel)}/mois</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Charges (crédits)</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(chargesActuel)}/mois</span>
+              </div>
+              <div className="my-1 border-t border-slate-200 dark:border-slate-600" />
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-slate-600 dark:text-slate-300">Taux d'endettement</span>
+                <span className={`font-bold ${
+                  tauxActuel > 35
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : tauxActuel > 30
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                }`}>
+                  {tauxActuel.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Après */}
+          <div className="rounded-xl border border-teal-200 bg-teal-50/50 p-4 dark:border-teal-800 dark:bg-slate-700/50">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-teal-500 dark:text-teal-400">Après acquisition</span>
+            </div>
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Revenus pondérés</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(revenusPondèresApres)}/mois</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 dark:text-slate-400">Charges (crédits + nouveau)</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">{formatEuro(chargesApres)}/mois</span>
+              </div>
+              <div className="my-1 border-t border-teal-200 dark:border-teal-800" />
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-slate-600 dark:text-slate-300">Taux d'endettement</span>
+                <span className={`font-bold ${
+                  tauxApres > 35
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : tauxApres > 30
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                }`}>
+                  {tauxApres.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variation */}
+        <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-600 dark:bg-slate-800">
+          <div className="flex items-center gap-2">
+            {variationTaux > 0 ? <TrendingUp size={18} className="text-amber-500" /> : <TrendingDown size={18} className="text-emerald-500" />}
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Variation du taux d'endettement
+            </span>
+          </div>
+          <span className={`text-sm font-bold ${variationTaux > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+            {variationTaux > 0 ? '+' : ''}{variationTaux.toFixed(1)} pts
+          </span>
+        </div>
+
+        {tauxApres > 35 && (
+          <p className="mt-3 text-xs text-rose-500 dark:text-rose-400">
+            Au-delà du seuil de 35% recommandé par les banques. Le financement pourrait être refusé ou nécessiter un apport supplémentaire.
+          </p>
+        )}
+        {tauxApres > 0 && tauxApres <= 35 && (
+          <p className="mt-3 text-xs text-emerald-500 dark:text-emerald-400">
+            Dans la limite des 35% recommandés par les banques.
+          </p>
+        )}
       </SectionCard>
 
       {/* --- Structure juridique --- */}

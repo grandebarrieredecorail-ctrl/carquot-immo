@@ -195,6 +195,7 @@ function App() {
             loyerMaxSuggere={results.loyerMaxSuggere}
             loyerEstimeQuartier={results.loyerEstimeQuartier}
             loyerM2Quartier={results.loyerM2Quartier}
+            mensualiteTotale={results.mensualiteTotale}
           />
         );
       case 'revente':
